@@ -3,7 +3,7 @@ from flask.views import MethodView
 import db
 from models.group import Group
 import pprint
-class GroupsMethod(MethodView):
+class GroupsEndpoint(MethodView):
     
     def get(self):
         """

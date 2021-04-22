@@ -4,11 +4,11 @@ app.config['SECRET_KEY'] = "asfdsafdsadfsafdsadffdsa"
 #app.config['SQLALCHEMY_URL'] = "sqlite:///"
 
 
-from app.views.SingleUserMethod import SingleUserMethod
-from app.views.UsersMethod import UsersMethod
-from app.views.GroupsMethod import GroupsMethod
+from app.views.UserEndpoint import UserEndpoint
+from app.views.UsersEndpoint import UsersEndpoint
+from app.views.GroupsEndpoint import GroupsEndpoint
 
-app.add_url_rule("/users/<userid>", view_func=SingleUserMethod.as_view("example_api"))
-app.add_url_rule("/users", view_func=UsersMethod.as_view("example_apis"))
-app.add_url_rule("/groups", view_func=GroupsMethod.as_view("example_apisgroup"))
+app.add_url_rule("/users/<userid>", view_func=UserEndpoint.as_view("example_api"))
+app.add_url_rule("/users", view_func=UsersEndpoint.as_view("example_apis"))
+app.add_url_rule("/groups", view_func=GroupsEndpoint.as_view("example_apisgroup"))
 

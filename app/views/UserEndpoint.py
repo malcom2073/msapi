@@ -1,8 +1,10 @@
 from flask.views import MethodView
 import db
-
+from models.user import User
+from models.group import Group
+import pprint
 # /users/<userid>
-class SingleUserMethod(MethodView):
+class UserEndpoint(MethodView):
     
     def get(self,userid):
         """

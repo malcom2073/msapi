@@ -19,7 +19,7 @@ main_table_list = {}
 def AppSession():
     if g.db is not None:
         return g.db
-    print("Attempted to grab db.AppSession() without a database entry!!!")
+#    print("Attempted to grab db.AppSession() without a database entry!!!")
 
 @app.app.before_request
 def before_request():

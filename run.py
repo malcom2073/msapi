@@ -15,6 +15,7 @@ from flasgger import Swagger
 print("Running")
 
 import db
+db.initialize_empty_database(db)
 db.populate_sample_data(db)
 
 
@@ -24,6 +25,7 @@ from models.group import Group
 from models.usergroup import UserGroup
 from dataclasses import dataclass
 from dataclasses_serialization.json import JSONSerializer
+
 #db.Model.metadata.create_all(db.engine)
 #for tbl in reversed(db.Model.metadata.sorted_tables):
 #    try:    
