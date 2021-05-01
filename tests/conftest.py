@@ -22,5 +22,6 @@ def client():
 #    clearDatabase()
 #    loadDatabase('output.csv',False)
     db.initialize_empty_database(db)
+    db.populate_sample_data(db)
     return app.app.test_client()
 

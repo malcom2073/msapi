@@ -5,91 +5,58 @@ import json
 import pprint
 import datetime
 
+USER="malcom2073"
+PASSWORD="12345"
 
 data_createuser = {
   "email": "bob@asdf.com",
-  "groupname": "Admin",
+  "groupname": "Users",
   "name": "bob",
   "password": "bobingabout123",
   "state": "new",
-  "username": "bobinabout"
+  "username": "bobinabout",
+  "metadata": [
+      {
+          "city":"westminster"
+      },
+      {
+          "state":"maryland"
+      }
+  ]
 }
 data_creategroup = {
-    "name" : "Admin"
+    "name" : "Users"
 }
 
-def test_groups_list_empty(client):
-    print("*******************RUNNING TEST_BLOG_ADDPOST********************")
-    rv = client.get("/groups")
-    print("test")
-    pprint.pprint(rv.data)
-    jsonresponse = json.loads(rv.data)
-    assert jsonresponse['status'] == "success"
-    assert jsonresponse['groups'] == []
 
-
-# Test inserting forums based on the forumindex variable above!
-def test_user_list_empty(client):
-    print("*******************RUNNING TEST_BLOG_ADDPOST********************")
-    rv = client.get("/users")
-    print("test")
-    pprint.pprint(rv.data)
-    jsonresponse = json.loads(rv.data)
-    assert jsonresponse['status'] == "success"
-    assert jsonresponse['users'] == []
-
-#    assert False
-    # Grab a token and cookie
-#    rv = client.post('/auth/auth',json={ 'username': USER, 'password': PASSWORD })
-#    jsonresponse = json.loads(rv.data)
-#    assert jsonresponse['status'] == 'success'
-#    assert 'access_token' in jsonresponse
-#    accesstoken = jsonresponse['access_token']
-#    assert 'Set-Cookie' in rv.headers
-#    cookie = rv.headers['Set-Cookie']
-#    rv = client.get('/userinfo',headers={'Set-Cookie':cookie,'Authorization':'Bearer ' + accesstoken})
-#    pprint.pprint(rv.data)
-#    jsonresponse = json.loads(rv.data)
-#    assert 'data' in jsonresponse
-#    assert 'name' in jsonresponse['data'] and jsonresponse['data']['name'] == USER
-#    rv = client.post('/blog/addPost',
-#        headers={'Set-Cookie':cookie,'Authorization':'Bearer ' + accesstoken},
-#        json={'id':0,'title':'','date':'','content':'','tags':['new','blog','tech']})
-#    jsonresponse = json.loads(rv.data)
-#    pprint.pprint(jsonresponse)
-#    assert 'status' in jsonresponse and jsonresponse['status'] == 'success'
-    # We're good now to request to add forums!
-    #for obj in forumindex:
-    #    rv = client.post('/forum/addForum',
-    #        headers={'Set-Cookie':cookie,'Authorization':'Bearer ' + accesstoken},
-    #        json={'index':obj['id'],'title':obj['title'],'desc':obj['desc']})
-    #    jsonresponse = json.loads(rv.data)
-    #    assert 'status' in jsonresponse and jsonresponse['status'] == 'success'
-    #    pprint.pprint(rv.data)
-    ##assert False
 
 
 def test_user_add_badgroup(client):
     print("*******************RUNNING TEST_BLOG_ADDPOST********************")
-    rv = client.post('/users',json=data_createuser)
+    headers=get_valid_token(client)
+    rv = client.post('/users',json=data_createuser,headers=headers)
     jsonresponse = json.loads(rv.data)
     pprint.pprint(rv.data)
     assert jsonresponse['status'] == "failure"
-#    assert jsonresponse['result']['email'] == data_createuser['email']
-#    assert False
 
 def test_group_add_good(client):
     print("*******************RUNNING test_group_add_good********************")
-    rv = client.post('/groups',json=data_creategroup)
+    headers = get_valid_token(client)
+    rv = client.post('/groups',json=data_creategroup,headers=headers)
     jsonresponse = json.loads(rv.data)
     pprint.pprint(rv.data)
     assert jsonresponse['status'] == "success"
-    rv = client.get("/groups")
+    rv = client.get("/groups",headers=headers)
     pprint.pprint(rv.data)
     jsonresponse = json.loads(rv.data)
     assert jsonresponse['status'] == "success"
     assert len(jsonresponse['groups']) > 0
-    assert jsonresponse['groups'][0]['name'] == data_creategroup['name']
+    found = False
+    for group in jsonresponse['groups']:
+        if group['name'] == data_creategroup['name']:
+            found = True
+    assert found
+#    assert jsonresponse['groups'][0]['name'] == data_creategroup['name']
 #    assert jsonresponse['result']['email'] == data_createuser['email']
 #    assert False
 
@@ -104,32 +71,87 @@ def test_group_add_bad_duplicate(client):
 #    assert jsonresponse['result']['email'] == data_createuser['email']
 #    assert False
 
+def test_auth_endpoints(client):
+
+    rv = client.get('/users')
+    jsonresponse = json.loads(rv.data)
+    assert (jsonresponse['status'] == 'failure' and jsonresponse['error'] == 'Null session')
+
+    rv = client.get('/groups')
+    jsonresponse = json.loads(rv.data)
+    assert (jsonresponse['status'] == 'failure' and jsonresponse['error'] == 'Null session')
+
+
+def get_valid_token(client,username=USER,password=PASSWORD):
+    # Authenticate to get our token
+    rv = client.post('/auth/authenticate',json={ 'username': username, 'password': password })
+    jsonresponse = json.loads(rv.data)
+
+    # Verify the password worked and we have a token
+    assert jsonresponse['status'] == 'success'
+    assert 'access_token' in jsonresponse
+    accesstoken = jsonresponse['access_token']
+    assert 'Set-Cookie' in rv.headers
+    cookie = rv.headers['Set-Cookie']
+    return {'Set-Cookie':cookie,'Authorization':'Bearer ' + accesstoken}
+
+def test_authenticate(client):
+    # Test invalid authentication
+    rv = client.post('/auth/authenticate',json={ 'username': 'wrong', 'password': 'bad' })
+    jsonresponse = json.loads(rv.data)
+    assert jsonresponse['status'] == 'failure'
+
+    rv = client.post('/auth/authenticate',json={ 'username': USER, 'password': 'bad' })
+    jsonresponse = json.loads(rv.data)
+    assert jsonresponse['status'] == 'failure'
+
+    header = get_valid_token(client)
+    assert 'Set-Cookie' in header and 'Authorization' in header
+
+
+
+
 def test_user_add_good(client):
     print("*******************RUNNING test_user_add_good********************")
-    #test_group_add_good(client)
-    rv = client.post('/users',json=data_createuser)
+
+    # Verify we get a null session, since we're not passing in a valid token
+    rv = client.get('/users')
     jsonresponse = json.loads(rv.data)
-    pprint.pprint(rv.data)
-    assert jsonresponse['status'] == "success"
-    rv = client.get("/users")
-    pprint.pprint(rv.data)
+    assert (jsonresponse['status'] == 'failure' and jsonresponse['error'] == 'Null session')
+
+    headers = get_valid_token(client)
+
+    # Create a new user
+    rv = client.post('/users',json=data_createuser,headers=headers)
     jsonresponse = json.loads(rv.data)
+
+    # Verify it succeeds
     assert jsonresponse['status'] == "success"
-    assert len(jsonresponse['users']) > 0
-    assert jsonresponse['users'][0]['name'] == data_createuser['name']
+
+    # Grab the new user from the users endpoint, and validate that it created properly
+    newuserid = jsonresponse['users'][0]['id']
+    rv = client.get("/users/" + str(newuserid),headers=headers)
+    jsonresponse = json.loads(rv.data)
+
+    assert jsonresponse['status'] == "success"
+    assert len(jsonresponse['users']) == 1
+    assert jsonresponse['users'][0]['username'] == data_createuser['username']
     assert jsonresponse['users'][0]['email'] == data_createuser['email']
     assert jsonresponse['users'][0]['password'] == data_createuser['password']
-#    assert jsonresponse['users'][0]['state'] == data_createuser['state']
-    assert jsonresponse['users'][0]['username'] == data_createuser['username']
+    assert jsonresponse['users'][0]['name'] == data_createuser['name']
+
     groupname_found = False
     for group in jsonresponse['users'][0]['groups']:
         if group['name'] == data_createuser['groupname']:
             groupname_found = True
     assert groupname_found
-#    assert jsonresponse['']
 
-#    assert jsonresponse['result']['email'] == data_createuser['email']
-#    assert False
+    for pre_usermeta in data_createuser['metadata']:        
+        found = False
+        for usermeta in jsonresponse['users'][0]['usermeta']:
+            if usermeta['key'] in pre_usermeta and usermeta['value'] == pre_usermeta[usermeta['key']]:
+                found = True
+        assert found
 
 def test_user_add_duplicate(client):
     print("*******************RUNNING test_user_add_duplicate********************")
@@ -141,3 +163,37 @@ def test_user_add_duplicate(client):
     assert jsonresponse['status'] == "failure"
 #    assert jsonresponse['result']['email'] == data_createuser['email']
 #    assert False
+
+
+def test_user_login_not_validated(client):
+
+    # Try to access a user that is not validated
+    rv = client.post('/auth/authenticate',json={ 'username': data_createuser['username'], 'password': data_createuser['password'] })
+    jsonresponse = json.loads(rv.data)
+
+    # Grab real credentials
+    assert jsonresponse['status'] == 'failure'
+    headers = get_valid_token(client)
+
+    # Get our test user that we added
+    rv = client.get('/users',headers=headers)
+    jsonresponse = json.loads(rv.data)
+    assert jsonresponse['status'] == 'success'
+
+    founduser = None
+    for user in jsonresponse['users']:
+        if user['username'] == data_createuser['username']:
+            founduser = user
+            break
+
+    assert founduser
+    assert 'validated' in founduser and founduser['validated'] == False
+
+    # Validate the user
+    rv = client.patch("/users/" + str(founduser['id']),json={'validated':True},headers=headers)
+    jsonresponse = json.loads(rv.data)
+    assert jsonresponse['status'] == 'success'
+    assert len(jsonresponse['users']) == 1
+    assert 'validated' in jsonresponse['users'][0] and jsonresponse['users'][0]['validated'] == True
+
+

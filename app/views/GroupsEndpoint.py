@@ -3,8 +3,13 @@ from flask.views import MethodView
 import db
 from models.group import Group
 import pprint
+
+from app import auth
+
+
 class GroupsEndpoint(MethodView):
     
+    @auth.jwt_private    
     def get(self):
         """
         Endpoint to get a list of groups
@@ -25,6 +30,7 @@ class GroupsEndpoint(MethodView):
             retval.append(user.as_obj())
         return {'status':'success','groups':retval},200
 
+    @auth.jwt_private    
     def post(self):
         """
         Endpoint to create a new group

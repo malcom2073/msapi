@@ -49,25 +49,21 @@ def initialize_empty_database(db):
     db.mainsession.commit()
 def populate_sample_data(db):
     admingroup = Group(name="Admin")
-    usergroup = Group(name="user")
-    plebgroup = Group(name="pleb")
     try:
         db.mainsession.add(admingroup)
-        db.mainsession.add(usergroup)
-        db.mainsession.add(plebgroup)
         db.mainsession.commit()
     except Exception as ex:
         print("unable to add groups to DB")
         print(ex)
+        db.mainsession.rollback()
         pass
-    user = User(name="Mike",username="malcom2073",password="12345",email="malcom@mike.com",groups=[admingroup,usergroup])
-    user2 = User(name="Bob",username="Bobingabout",password="54321",email="bob@bob.com",groups=[usergroup,plebgroup])
+    user = User(name="Mike",username="malcom2073",password="12345",email="malcom@mike.com",groups=[admingroup],validated=True)
     try:
         db.mainsession.add(user)
-        db.mainsession.add(user2)
         db.mainsession.commit()
     except Exception as ex:
         print("unable to add user to DB")
+        db.mainsession.rollback()
         print(ex)
         pass
 

@@ -6,7 +6,7 @@ from sqlalchemy import ForeignKey, Column, Integer, String, DateTime, Boolean, U
 from sqlalchemy.orm import relationship
 from models.group import Group
 from models.usergroup import UserGroup
-
+from models.usermetadata import UserMetadata
 
 def GetUniqueConstraint():
     if db.UNIQUE_EMAIL:
@@ -37,6 +37,8 @@ class User:
     groups: List[Group] = field(
         default_factory=list, metadata={"sa": relationship("Group", secondary="usergroups")}
     )
+    usermeta: List[UserMetadata] = field(default_factory=list,metadata={ "sa": lambda: relationship("UserMetadata",lazy="joined")})
+    validated: bool = field(default=False,metadata={"sa": Column(Boolean,nullable=False)})
     __table_args__ = GetUniqueConstraint()
 #    id = Column(Integer, primary_key=True)
 #    username = Column(String)
