@@ -81,37 +81,17 @@ class Authenticate(MethodView):
 
 class Renew(MethodView):
 
+    @auth.jwt_private
     def post(self):
-        
-        userjson = request.get_json()
-        dbsession = db.AppSession()
-        group = dbsession.query(Group).filter(Group.name == userjson['groupname']).first()
-        if group is None:
-            # Invalid group!
-            return {'status':'failure','error':'Invalid group name entered'}
-        user = User(name=userjson['name'],username=userjson['username'],password=userjson['password'],email=userjson['email'],groups=[group])
-        metalist = []
-        if 'metadata' in userjson:
-            # Metadata exists, so insert it into the metadata table
-            for item in userjson['metadata']:
-                if len(item.keys()) > 1:
-                    # Bad!
-                    return {'status':'failure','error':'Invalid metadata format'}
-                key = list(item.keys())[0]
-                value = item[list(item.keys())[0]]
-                usermeta = UserMetadata(key=key,value=value)
-                user.usermeta.append(usermeta)
-                metalist.append(usermeta)
-                print(item,flush=True)
-        else:
-            print("No metadata in userjson",flush=True)
-        try:
-            dbsession.add(user)
-            for usermeta in metalist:
-                dbsession.add(usermeta)
-            dbsession.commit()
-        except Exception as ex:
-            print("unable to add user to DB")
-            return {'status':'failure','error':"Unable to add user: " + str(ex)}
+        jwt_token = auth.getJwt(request) # This is always valid due to @jwt_private decorator
+        session = request.cookies.get('session')
+        m = hashlib.sha256()
+        if session is None:
+            session = auth.get_random_string(24)
+        m.update(session.encode('utf-8'))
 
-        return {'status':'success','users':[user.as_obj()]},200
+        # TODO: These are hardcoded at the moment.
+        jwt_token['session'] = m.hexdigest()
+        resp = jsonify({'status':'success','access_token':auth.encode_auth_token(jwt_token)})
+        resp.set_cookie("mspysid", value = session, httponly = True)
+        return resp

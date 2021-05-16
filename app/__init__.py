@@ -7,14 +7,27 @@ app.config['SECRET_KEY'] = "asfdsafdsadfsafdsadffdsa"
 from app.views.UserEndpoint import UserEndpoint
 from app.views.UsersEndpoint import UsersEndpoint
 from app.views.GroupsEndpoint import GroupsEndpoint
-from app.views.AuthEndpoints import Authenticate
-from app.views.AuthEndpoints import Renew
 
-app.add_url_rule("/users/<userid>", view_func=UserEndpoint.as_view("example_api"))
-app.add_url_rule("/users", view_func=UsersEndpoint.as_view("example_apis"))
-app.add_url_rule("/groups", view_func=GroupsEndpoint.as_view("example_apisgroup"))
-app.add_url_rule("/auth/authenticate", view_func=Authenticate.as_view("example_apisauth"))
-app.add_url_rule("/auth/renew", view_func=Renew.as_view("example_apisauthrenew"))
+app.add_url_rule("/api/users/<userid>", view_func=UserEndpoint.as_view("example_api"))
+app.add_url_rule("/api/users", view_func=UsersEndpoint.as_view("example_apis"))
+app.add_url_rule("/api/groups", view_func=GroupsEndpoint.as_view("example_apisgroup"))
+#app.add_url_rule("/api/db/create", view_func=Renew.as_view("example_apisauthrenew"))
+#app.add_url_rule("/api/db/query", view_func=Renew.as_view("example_apisauthrenew"))
 
 
 
+
+def loadModules():
+    print("loading")
+    import os
+    import importlib
+    d = 'msmodules/'
+    for o in os.listdir(d):
+        if os.path.isdir(os.path.join(d,o)):
+            i = importlib.import_module(".",'msmodules.' + o + '')
+            app.register_blueprint(i.module_bp,url_prefix="/api" + i.module_prefix)
+            print("Imported module")
+            print(i)
+            print("Dir: " + os.path.join(d,o))
+
+loadModules()
