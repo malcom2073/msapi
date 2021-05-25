@@ -26,9 +26,12 @@ import app
 import os
 from sqlalchemy import and_, or_, not_
 from .views.postcollection import PostCollection
+from .views.postresource import PostResource
 from .models.msblogpost import MSBlogPost
 module_bp.add_url_rule("/posts", view_func=PostCollection.as_view("example_apisauth"))
+module_bp.add_url_rule("/posts/<postid>", view_func=PostResource.as_view("example_apisauth2"))
 
+PostResource
 # Should there be a standard set of module endpoints?
 # Something like: /getVersion, /getInfo, /getAuthor?
 

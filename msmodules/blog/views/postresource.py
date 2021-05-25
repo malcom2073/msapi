@@ -10,10 +10,10 @@ from ..models.msblogpost import MSBlogPost
 from sqlalchemy import and_, or_, not_
 
 # /posts
-class PostCollection(MethodView):
+class PostResource(MethodView):
 
     @auth.jwt_private
-    def get(self):
+    def get(self,postid):
         """
         Endpoint to get a specific user
         This is using docstrings for specifications.
@@ -51,12 +51,11 @@ class PostCollection(MethodView):
             #filter(or_(User.name == 'ed', User.name == 'wendy'))
             #postlist = dbsession.query(MSBlogPost).filter((MSBlogPost.published == True) | (MSBlogPost.published == False & MSblogPost.user = )).order_by(MSBlogPost.timestamp.desc()).all()
             postlist = None
-            #if uid is not None:
-            #    postlist = dbsession.query(MSBlogPost).filter(or_(MSBlogPost.published == True,MSBlogPost.user_id == uid)).order_by(MSBlogPost.timestamp.desc()).all()
-            #else:
-            #    postlist = dbsession.query(MSBlogPost).filter(MSBlogPost.published == True).order_by(MSBlogPost.timestamp.desc()).all()
-            postlist = dbsession.query(MSBlogPost).order_by(MSBlogPost.timestamp.desc()).all()
-            jsonresponse = jsonify({'status':'success','posts': postlist})
+            if uid is not None:
+                postlist = dbsession.query(MSBlogPost).filter(or_(MSBlogPost.published == True,MSBlogPost.user_id == uid)).order_by(MSBlogPost.timestamp.desc()).all()
+            else:
+                postlist = dbsession.query(MSBlogPost).filter(MSBlogPost.published == True).order_by(MSBlogPost.timestamp.desc()).all()
+            jsonresponse = jsonify({'status':'success','data': postlist})
             dbsession.close()
             print("Postcount: " + str(len(postlist)))
             sys.stdout.flush()
@@ -80,7 +79,7 @@ class PostCollection(MethodView):
 #        return {'id' : user.id, 'username':user.username,'name': user.name,'groupname':user.groupname,'password':user.password,'state':user.state},200
 
     @auth.jwt_private    
-    def post(self):
+    def post(self,postid):
         jwt = auth.getJwt(request)
         print("JWT!!!")
         pprint.pprint(jwt)
@@ -105,13 +104,13 @@ class PostCollection(MethodView):
             dbsession.add(user)
             dbsession.commit()
         except Exception as ex:
-            return {'status':'failure','post':userjson,'exception': + str(ex)},200
-        return {'status':'success','post':user.as_obj()}
+            return {'status':'failure','user':userjson,'exception': + str(ex)},200
+        return {'status':'success','user':user.as_obj()}
 #        user = manager.addUser(userjson['username'],userjson['name'],userjson['groupname'],userjson['password'],userjson['state'])
 #        return {'result':'success','result':{'id' : user.id, 'username':user.username,'name': user.name,'groupname':user.groupname,'password':user.password,'state':user.state}},200
 
     @auth.jwt_private    
-    def put(self):
+    def put(self,postid):
         """ Responds to PUT requests """
         return "Responding to a PUT request"
 

@@ -17,7 +17,7 @@ data_createpost = {
 
 import test_api_user
 
-def test_blog_get_posts(client):
+def test_blog_get_posts_empty(client):
     headers = test_api_user.get_valid_token(client)
     # Get our test user that we added
     rv = client.get('/api/blog/posts',headers=headers)
@@ -33,7 +33,19 @@ def test_blog_make_post(client):
     jsonresponse = json.loads(rv.data)
     pprint.pprint(jsonresponse)
     assert jsonresponse['status'] == 'success'
+    assert len(jsonresponse['post']) == 1
+    pprint.pprint(jsonresponse)
+    assert False
 
+def test_blog_get_posts(client):
+    test_blog_make_post(client)
+    headers = test_api_user.get_valid_token(client)
+    # Get our test user that we added
+    rv = client.get('/api/blog/posts',headers=headers)
+    jsonresponse = json.loads(rv.data)
+    pprint.pprint(jsonresponse)
+    assert jsonresponse['status'] == 'success'
+    assert len(jsonresponse['posts']) == 1
 
 """ from conftest import client
 from conftest import PASSWORD
