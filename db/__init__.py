@@ -39,12 +39,12 @@ from models.group import Group
 from models.user import User
 def initialize_empty_database(db):
     db.mapper_registry.metadata.create_all(bind=db.engine)
-#    for tbl in reversed(db.mapper_registry.metadata.sorted_tables):
-#        try:
-#            tbl.drop(db.engine)
-#        except:
-#            pass
-#    db.mapper_registry.metadata.create_all(bind=db.engine)
+    for tbl in reversed(db.mapper_registry.metadata.sorted_tables):
+        try:
+            tbl.drop(db.engine)
+        except:
+            pass
+    db.mapper_registry.metadata.create_all(bind=db.engine)
 
     db.mainsession.commit()
 def populate_sample_data(db):

@@ -34,7 +34,7 @@ data_creategroup = {
 def test_user_add_badgroup(client):
     print("*******************RUNNING TEST_BLOG_ADDPOST********************")
     headers=get_valid_token(client)
-    rv = client.post('/users',json=data_createuser,headers=headers)
+    rv = client.post('/api/users',json=data_createuser,headers=headers)
     jsonresponse = json.loads(rv.data)
     pprint.pprint(rv.data)
     assert jsonresponse['status'] == "failure"
@@ -42,11 +42,11 @@ def test_user_add_badgroup(client):
 def test_group_add_good(client):
     print("*******************RUNNING test_group_add_good********************")
     headers = get_valid_token(client)
-    rv = client.post('/groups',json=data_creategroup,headers=headers)
+    rv = client.post('/api/groups',json=data_creategroup,headers=headers)
     jsonresponse = json.loads(rv.data)
     pprint.pprint(rv.data)
     assert jsonresponse['status'] == "success"
-    rv = client.get("/groups",headers=headers)
+    rv = client.get("/api/groups",headers=headers)
     pprint.pprint(rv.data)
     jsonresponse = json.loads(rv.data)
     assert jsonresponse['status'] == "success"
@@ -64,7 +64,7 @@ def test_group_add_good(client):
 
 def test_group_add_bad_duplicate(client):
     print("*******************RUNNING test_group_add_bad_duplicate********************")
-    rv = client.post('/groups',json=data_creategroup)
+    rv = client.post('/api/groups',json=data_creategroup)
     jsonresponse = json.loads(rv.data)
     pprint.pprint(rv.data)
     assert jsonresponse['status'] == "failure"
@@ -73,18 +73,18 @@ def test_group_add_bad_duplicate(client):
 
 def test_auth_endpoints(client):
 
-    rv = client.get('/users')
+    rv = client.get('/api/users')
     jsonresponse = json.loads(rv.data)
     assert (jsonresponse['status'] == 'failure' and jsonresponse['error'] == 'Null session')
 
-    rv = client.get('/groups')
+    rv = client.get('/api/groups')
     jsonresponse = json.loads(rv.data)
     assert (jsonresponse['status'] == 'failure' and jsonresponse['error'] == 'Null session')
 
 
 def get_valid_token(client,username=USER,password=PASSWORD):
     # Authenticate to get our token
-    rv = client.post('/auth/authenticate',json={ 'username': username, 'password': password })
+    rv = client.post('/api/auth/authenticate',json={ 'username': username, 'password': password })
     jsonresponse = json.loads(rv.data)
 
     # Verify the password worked and we have a token
@@ -97,11 +97,11 @@ def get_valid_token(client,username=USER,password=PASSWORD):
 
 def test_authenticate(client):
     # Test invalid authentication
-    rv = client.post('/auth/authenticate',json={ 'username': 'wrong', 'password': 'bad' })
+    rv = client.post('/api/auth/authenticate',json={ 'username': 'wrong', 'password': 'bad' })
     jsonresponse = json.loads(rv.data)
     assert jsonresponse['status'] == 'failure'
 
-    rv = client.post('/auth/authenticate',json={ 'username': USER, 'password': 'bad' })
+    rv = client.post('/api/auth/authenticate',json={ 'username': USER, 'password': 'bad' })
     jsonresponse = json.loads(rv.data)
     assert jsonresponse['status'] == 'failure'
 
@@ -112,25 +112,28 @@ def test_authenticate(client):
 
 
 def test_user_add_good(client):
+    test_group_add_good(client)
     print("*******************RUNNING test_user_add_good********************")
 
     # Verify we get a null session, since we're not passing in a valid token
-    rv = client.get('/users')
+    rv = client.get('/api/users')
     jsonresponse = json.loads(rv.data)
     assert (jsonresponse['status'] == 'failure' and jsonresponse['error'] == 'Null session')
 
     headers = get_valid_token(client)
 
     # Create a new user
-    rv = client.post('/users',json=data_createuser,headers=headers)
+    rv = client.post('/api/users',json=data_createuser,headers=headers)
     jsonresponse = json.loads(rv.data)
+    print("post to user create result:",flush=True)
+    pprint.pprint(jsonresponse)
 
     # Verify it succeeds
     assert jsonresponse['status'] == "success"
 
     # Grab the new user from the users endpoint, and validate that it created properly
     newuserid = jsonresponse['users'][0]['id']
-    rv = client.get("/users/" + str(newuserid),headers=headers)
+    rv = client.get("/api/users/" + str(newuserid),headers=headers)
     jsonresponse = json.loads(rv.data)
 
     assert jsonresponse['status'] == "success"
@@ -157,7 +160,7 @@ def test_user_add_duplicate(client):
     print("*******************RUNNING test_user_add_duplicate********************")
     #test_group_add_good(client)
     #test_user_add_good(client)
-    rv = client.post('/users',json=data_createuser)
+    rv = client.post('/api/users',json=data_createuser)
     jsonresponse = json.loads(rv.data)
     pprint.pprint(rv.data)
     assert jsonresponse['status'] == "failure"
@@ -166,9 +169,9 @@ def test_user_add_duplicate(client):
 
 
 def test_user_login_not_validated(client):
-
+    test_user_add_good(client)
     # Try to access a user that is not validated
-    rv = client.post('/auth/authenticate',json={ 'username': data_createuser['username'], 'password': data_createuser['password'] })
+    rv = client.post('/api/auth/authenticate',json={ 'username': data_createuser['username'], 'password': data_createuser['password'] })
     jsonresponse = json.loads(rv.data)
 
     # Grab real credentials
@@ -176,7 +179,7 @@ def test_user_login_not_validated(client):
     headers = get_valid_token(client)
 
     # Get our test user that we added
-    rv = client.get('/users',headers=headers)
+    rv = client.get('/api/users',headers=headers)
     jsonresponse = json.loads(rv.data)
     assert jsonresponse['status'] == 'success'
 
@@ -190,10 +193,11 @@ def test_user_login_not_validated(client):
     assert 'validated' in founduser and founduser['validated'] == False
 
     # Validate the user
-    rv = client.patch("/users/" + str(founduser['id']),json={'validated':True},headers=headers)
+    rv = client.patch("/api/users/" + str(founduser['id']),json={'validated':True},headers=headers)
     jsonresponse = json.loads(rv.data)
     assert jsonresponse['status'] == 'success'
     assert len(jsonresponse['users']) == 1
     assert 'validated' in jsonresponse['users'][0] and jsonresponse['users'][0]['validated'] == True
+
 
 

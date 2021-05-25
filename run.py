@@ -18,8 +18,6 @@ import db
 db.initialize_empty_database(db)
 db.populate_sample_data(db)
 
-
-
 from models.user import User
 from models.group import Group
 from models.usergroup import UserGroup
