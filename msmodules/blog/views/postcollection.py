@@ -63,6 +63,7 @@ class PostCollection(MethodView):
 
             if postlist is None or len(postlist) == 0:
                 print("No posts")
+                return {'status':'success','posts':[]},200
                 return jsonify({'status':'error','error':'No Posts'})
             return jsonresponse
         except Exception as e:

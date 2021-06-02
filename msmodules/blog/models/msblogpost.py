@@ -41,8 +41,8 @@ class MSBlogPost:
 
 #    user = relationship("User",backref="msblog_posts")
 
-    def __repr__(self):
-        return "<User(id={}, name={}>".format(self.id, self.name)
+#    def __repr__(self):
+#        return "<User(id={}, name={}>".format(self.id, self.name)
 
 db.main_table_list[MSBlogPost.__tablename__] = MSBlogPost
 

@@ -115,25 +115,25 @@ class PostResource(MethodView):
         return "Responding to a PUT request"
 
     @auth.jwt_private    
-    def patch(self,userid):
+    def patch(self,postid):
         """ Responds to PATCH requests """
         dbsession = db.AppSession()
-        user = dbsession.query(User).filter(User.id == userid).first()
-        pprint.pprint(user)
-        if user is None:
-            return {'status':'failure','error':"No valid User for userid " + str(userid) + " found"},200
-        userjson = request.get_json()
+        post = dbsession.query(MSBlogPost).filter(MSBlogPost.id == postid).first()
+        pprint.pprint(post)
+        if post is None:
+            return {'status':'failure','error':"No valid Post for postid " + str(postid) + " found"},200
+        postpatch = request.get_json()
         # This will contain the changes to make tothis use as list of  KVP
         # [{"key":"value"}]
-        print(userjson)
-        for patch in userjson:
+        print(postpatch)
+        for patch in postpatch:
             #pprint.pprint(patch)
             print(patch)
-            setattr(user,patch,userjson[patch])
+            setattr(post,patch,postpatch[patch])
 #            user[patch] = userjson[patch]
         try:
             dbsession.commit()
-            return {'status':'success','users':[user.as_obj()]},200
+            return {'status':'success','post':[post.as_obj()]},200
         except:
             dbsession.rollback()
             return {'status':'failure','error':"Unable to commit!"},200

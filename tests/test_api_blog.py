@@ -23,8 +23,9 @@ def test_blog_get_posts_empty(client):
     rv = client.get('/api/blog/posts',headers=headers)
     jsonresponse = json.loads(rv.data)
     pprint.pprint(jsonresponse)
-    assert True
-
+    assert jsonresponse['status'] == 'success'
+    assert len(jsonresponse['posts']) == 0
+ 
 
 def test_blog_make_post(client):
     headers = test_api_user.get_valid_token(client)
@@ -33,9 +34,9 @@ def test_blog_make_post(client):
     jsonresponse = json.loads(rv.data)
     pprint.pprint(jsonresponse)
     assert jsonresponse['status'] == 'success'
-    assert len(jsonresponse['post']) == 1
+    assert jsonresponse['post']['content'] == data_createpost['content']
     pprint.pprint(jsonresponse)
-    assert False
+#    assert False
 
 def test_blog_get_posts(client):
     test_blog_make_post(client)
@@ -46,6 +47,25 @@ def test_blog_get_posts(client):
     pprint.pprint(jsonresponse)
     assert jsonresponse['status'] == 'success'
     assert len(jsonresponse['posts']) == 1
+#    assert False
+
+
+def test_blog_modify_post(client):
+    test_blog_make_post(client)
+    headers = test_api_user.get_valid_token(client)
+    # Get our test user that we added
+    rv = client.get('/api/blog/posts',headers=headers)
+    jsonresponse = json.loads(rv.data)
+    pprint.pprint(jsonresponse)
+    assert jsonresponse['status'] == 'success'
+    assert len(jsonresponse['posts']) == 1
+    rv = client.patch('/api/blog/posts/' + str(jsonresponse['posts'][0]['id']),headers=headers,json={'content':"New Content"})
+    jsonresponse = json.loads(rv.data)
+    pprint.pprint(jsonresponse)
+    assert jsonresponse['status'] == 'success'
+    assert len(jsonresponse['post'])
+    assert jsonresponse['post'][0]['content'] == "New Content"
+#    assert False
 
 """ from conftest import client
 from conftest import PASSWORD
