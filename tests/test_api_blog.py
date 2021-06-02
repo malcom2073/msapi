@@ -1,6 +1,9 @@
 from conftest import client
 from conftest import PASSWORD
 from conftest import USER
+from conftest import SUCCESS_STR
+from conftest import FAIL_STR
+from conftest import STATUS_KEY
 import json
 import pprint
 import datetime
@@ -23,7 +26,7 @@ def test_blog_get_posts_empty(client):
     rv = client.get('/api/blog/posts',headers=headers)
     jsonresponse = json.loads(rv.data)
     pprint.pprint(jsonresponse)
-    assert jsonresponse['status'] == 'success'
+    assert jsonresponse[STATUS_KEY] == SUCCESS_STR
     assert len(jsonresponse['posts']) == 0
  
 
@@ -33,7 +36,7 @@ def test_blog_make_post(client):
     rv = client.post('/api/blog/posts',headers=headers,json=data_createpost)
     jsonresponse = json.loads(rv.data)
     pprint.pprint(jsonresponse)
-    assert jsonresponse['status'] == 'success'
+    assert jsonresponse[STATUS_KEY] == SUCCESS_STR
     assert jsonresponse['post']['content'] == data_createpost['content']
     pprint.pprint(jsonresponse)
 #    assert False
@@ -45,7 +48,7 @@ def test_blog_get_posts(client):
     rv = client.get('/api/blog/posts',headers=headers)
     jsonresponse = json.loads(rv.data)
     pprint.pprint(jsonresponse)
-    assert jsonresponse['status'] == 'success'
+    assert jsonresponse[STATUS_KEY] == SUCCESS_STR
     assert len(jsonresponse['posts']) == 1
 #    assert False
 
@@ -57,12 +60,12 @@ def test_blog_modify_post(client):
     rv = client.get('/api/blog/posts',headers=headers)
     jsonresponse = json.loads(rv.data)
     pprint.pprint(jsonresponse)
-    assert jsonresponse['status'] == 'success'
+    assert jsonresponse[STATUS_KEY] == SUCCESS_STR
     assert len(jsonresponse['posts']) == 1
     rv = client.patch('/api/blog/posts/' + str(jsonresponse['posts'][0]['id']),headers=headers,json={'content':"New Content"})
     jsonresponse = json.loads(rv.data)
     pprint.pprint(jsonresponse)
-    assert jsonresponse['status'] == 'success'
+    assert jsonresponse[STATUS_KEY] == SUCCESS_STR
     assert len(jsonresponse['post'])
     assert jsonresponse['post'][0]['content'] == "New Content"
 #    assert False
@@ -107,7 +110,7 @@ def test_user_add_badgroup(client):
     rv = client.post('/api/users',json=data_createuser,headers=headers)
     jsonresponse = json.loads(rv.data)
     pprint.pprint(rv.data)
-    assert jsonresponse['status'] == "failure"
+    assert jsonresponse[STATUS_KEY] == FAIL_STR
 
 def test_group_add_good(client):
     print("*******************RUNNING test_group_add_good********************")
@@ -115,11 +118,11 @@ def test_group_add_good(client):
     rv = client.post('/api/groups',json=data_creategroup,headers=headers)
     jsonresponse = json.loads(rv.data)
     pprint.pprint(rv.data)
-    assert jsonresponse['status'] == "success"
+    assert jsonresponse[STATUS_KEY] == SUCCESS_STR
     rv = client.get("/api/groups",headers=headers)
     pprint.pprint(rv.data)
     jsonresponse = json.loads(rv.data)
-    assert jsonresponse['status'] == "success"
+    assert jsonresponse[STATUS_KEY] == SUCCESS_STR
     assert len(jsonresponse['groups']) > 0
     found = False
     for group in jsonresponse['groups']:
@@ -137,7 +140,7 @@ def test_group_add_bad_duplicate(client):
     rv = client.post('/api/groups',json=data_creategroup)
     jsonresponse = json.loads(rv.data)
     pprint.pprint(rv.data)
-    assert jsonresponse['status'] == "failure"
+    assert jsonresponse[STATUS_KEY] == FAIL_STR
 #    assert jsonresponse['result']['email'] == data_createuser['email']
 #    assert False
 
@@ -145,11 +148,11 @@ def test_auth_endpoints(client):
 
     rv = client.get('/api/users')
     jsonresponse = json.loads(rv.data)
-    assert (jsonresponse['status'] == 'failure' and jsonresponse['error'] == 'Null session')
+    assert (jsonresponse[STATUS_KEY] == FAIL_STR and jsonresponse['error'] == 'Null session')
 
     rv = client.get('/api/groups')
     jsonresponse = json.loads(rv.data)
-    assert (jsonresponse['status'] == 'failure' and jsonresponse['error'] == 'Null session')
+    assert (jsonresponse[STATUS_KEY] == FAIL_STR and jsonresponse['error'] == 'Null session')
 
 
 def get_valid_token(client,username=USER,password=PASSWORD):
@@ -158,7 +161,7 @@ def get_valid_token(client,username=USER,password=PASSWORD):
     jsonresponse = json.loads(rv.data)
 
     # Verify the password worked and we have a token
-    assert jsonresponse['status'] == 'success'
+    assert jsonresponse[STATUS_KEY] == SUCCESS_STR
     assert 'access_token' in jsonresponse
     accesstoken = jsonresponse['access_token']
     assert 'Set-Cookie' in rv.headers
@@ -169,11 +172,11 @@ def test_authenticate(client):
     # Test invalid authentication
     rv = client.post('/api/auth/authenticate',json={ 'username': 'wrong', 'password': 'bad' })
     jsonresponse = json.loads(rv.data)
-    assert jsonresponse['status'] == 'failure'
+    assert jsonresponse[STATUS_KEY] == FAIL_STR
 
     rv = client.post('/api/auth/authenticate',json={ 'username': USER, 'password': 'bad' })
     jsonresponse = json.loads(rv.data)
-    assert jsonresponse['status'] == 'failure'
+    assert jsonresponse[STATUS_KEY] == FAIL_STR
 
     header = get_valid_token(client)
     assert 'Set-Cookie' in header and 'Authorization' in header
@@ -187,7 +190,7 @@ def test_user_add_good(client):
     # Verify we get a null session, since we're not passing in a valid token
     rv = client.get('/api/users')
     jsonresponse = json.loads(rv.data)
-    assert (jsonresponse['status'] == 'failure' and jsonresponse['error'] == 'Null session')
+    assert (jsonresponse[STATUS_KEY] == FAIL_STR and jsonresponse['error'] == 'Null session')
 
     headers = get_valid_token(client)
 
@@ -196,14 +199,14 @@ def test_user_add_good(client):
     jsonresponse = json.loads(rv.data)
 
     # Verify it succeeds
-    assert jsonresponse['status'] == "success"
+    assert jsonresponse[STATUS_KEY] == SUCCESS_STR
 
     # Grab the new user from the users endpoint, and validate that it created properly
     newuserid = jsonresponse['users'][0]['id']
     rv = client.get("/api/users/" + str(newuserid),headers=headers)
     jsonresponse = json.loads(rv.data)
 
-    assert jsonresponse['status'] == "success"
+    assert jsonresponse[STATUS_KEY] == SUCCESS_STR
     assert len(jsonresponse['users']) == 1
     assert jsonresponse['users'][0]['username'] == data_createuser['username']
     assert jsonresponse['users'][0]['email'] == data_createuser['email']
@@ -230,7 +233,7 @@ def test_user_add_duplicate(client):
     rv = client.post('/api/users',json=data_createuser)
     jsonresponse = json.loads(rv.data)
     pprint.pprint(rv.data)
-    assert jsonresponse['status'] == "failure"
+    assert jsonresponse[STATUS_KEY] == FAIL_STR
 #    assert jsonresponse['result']['email'] == data_createuser['email']
 #    assert False
 
@@ -242,13 +245,13 @@ def test_user_login_not_validated(client):
     jsonresponse = json.loads(rv.data)
 
     # Grab real credentials
-    assert jsonresponse['status'] == 'failure'
+    assert jsonresponse[STATUS_KEY] == FAIL_STR
     headers = get_valid_token(client)
 
     # Get our test user that we added
     rv = client.get('/api/users',headers=headers)
     jsonresponse = json.loads(rv.data)
-    assert jsonresponse['status'] == 'success'
+    assert jsonresponse[STATUS_KEY] == SUCCESS_STR
 
     founduser = None
     for user in jsonresponse['users']:
@@ -262,7 +265,7 @@ def test_user_login_not_validated(client):
     # Validate the user
     rv = client.patch("/api/users/" + str(founduser['id']),json={'validated':True},headers=headers)
     jsonresponse = json.loads(rv.data)
-    assert jsonresponse['status'] == 'success'
+    assert jsonresponse[STATUS_KEY] == SUCCESS_STR
     assert len(jsonresponse['users']) == 1
     assert 'validated' in jsonresponse['users'][0] and jsonresponse['users'][0]['validated'] == True
 

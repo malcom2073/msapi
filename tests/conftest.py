@@ -1,8 +1,11 @@
 import pytest
 import os
 import sys
-USER = "admin"
-PASSWORD = "testpassword"
+USER="malcom2073"
+PASSWORD="12345"
+SUCCESS_STR = 'success'
+FAIL_STR = 'failure'
+STATUS_KEY = 'status'
 sys.path.append("/home/mcarpenter/code/msapi")
 import config
 config.SQLALCHEMY_DATABASE_URI = "sqlite://"
