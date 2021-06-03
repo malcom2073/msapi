@@ -50,6 +50,7 @@ def test_blog_get_posts(client):
     pprint.pprint(jsonresponse)
     assert jsonresponse[STATUS_KEY] == SUCCESS_STR
     assert len(jsonresponse['posts']) == 1
+    assert jsonresponse['posts'][0]['published'] == False
 #    assert False
 
 
@@ -70,6 +71,42 @@ def test_blog_modify_post(client):
     assert jsonresponse['post'][0]['content'] == "New Content"
 #    assert False
 
+
+# Make sure that when we create a post, we can publish it to make it visible to non-logged in users.
+def test_blog_publish_post(client):
+    test_blog_make_post(client)
+    headers = test_api_user.get_valid_token(client)
+    # Get our test user that we added
+    rv = client.get('/api/blog/posts',headers=headers)
+    jsonresponse = json.loads(rv.data)
+    pprint.pprint(jsonresponse)
+    assert jsonresponse[STATUS_KEY] == SUCCESS_STR
+    assert len(jsonresponse['posts']) == 1
+    assert jsonresponse['posts'][0]['published'] == False
+    postid = jsonresponse['posts'][0]['id']
+
+    rv = client.get('/api/blog/posts')
+    jsonresponse = json.loads(rv.data)
+    pprint.pprint(jsonresponse)
+    assert jsonresponse[STATUS_KEY] == SUCCESS_STR
+    assert len(jsonresponse['posts']) == 0
+
+    rv = client.patch('/api/blog/posts/' + str(postid),headers=headers,json={'published':True})
+    jsonresponse = json.loads(rv.data)
+    pprint.pprint(jsonresponse)
+    assert jsonresponse[STATUS_KEY] == SUCCESS_STR
+    assert len(jsonresponse['post'])
+    assert jsonresponse['post'][0]['published'] == True
+
+
+    rv = client.get('/api/blog/posts')
+    jsonresponse = json.loads(rv.data)
+    pprint.pprint(jsonresponse)
+    assert jsonresponse[STATUS_KEY] == SUCCESS_STR
+    assert len(jsonresponse['posts']) == 1
+    assert jsonresponse['posts'][0]['published'] == True
+
+#    assert False
 """ from conftest import client
 from conftest import PASSWORD
 from conftest import USER

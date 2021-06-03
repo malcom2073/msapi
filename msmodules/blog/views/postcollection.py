@@ -12,7 +12,7 @@ from sqlalchemy import and_, or_, not_
 # /posts
 class PostCollection(MethodView):
 
-    @auth.jwt_private
+#    @auth.jwt_private
     def get(self):
         """
         Endpoint to get a specific user
@@ -51,11 +51,14 @@ class PostCollection(MethodView):
             #filter(or_(User.name == 'ed', User.name == 'wendy'))
             #postlist = dbsession.query(MSBlogPost).filter((MSBlogPost.published == True) | (MSBlogPost.published == False & MSblogPost.user = )).order_by(MSBlogPost.timestamp.desc()).all()
             postlist = None
-            #if uid is not None:
-            #    postlist = dbsession.query(MSBlogPost).filter(or_(MSBlogPost.published == True,MSBlogPost.user_id == uid)).order_by(MSBlogPost.timestamp.desc()).all()
+            if uid is not None:
+                postlist = dbsession.query(MSBlogPost).filter(or_(MSBlogPost.published == True,MSBlogPost.user_id == uid)).order_by(MSBlogPost.timestamp.desc()).all()
+            else:
+                postlist = dbsession.query(MSBlogPost).filter(MSBlogPost.published == True).order_by(MSBlogPost.timestamp.desc()).all()
+            #if jwt is not None:
+            #    postlist = dbsession.query(MSBlogPost).filter(or_(MSBlogPost.published == True,MSBlogPost.user_id == jwt['user_id'])).order_by(MSBlogPost.timestamp.desc()).all()
             #else:
-            #    postlist = dbsession.query(MSBlogPost).filter(MSBlogPost.published == True).order_by(MSBlogPost.timestamp.desc()).all()
-            postlist = dbsession.query(MSBlogPost).order_by(MSBlogPost.timestamp.desc()).all()
+            #    postlist = dbsession.query(MSBlogPost).order_by(MSBlogPost.timestamp.desc()).all()
             jsonresponse = jsonify({'status':'success','posts': postlist})
             dbsession.close()
             print("Postcount: " + str(len(postlist)))
@@ -98,6 +101,7 @@ class PostCollection(MethodView):
         userjson = request.get_json()
         user = MSBlogPost()
         try:
+            user.user_id = uid
             user.content = userjson['content']
             user.title = userjson['title']
             user.timestamp = userjson['timestamp']
@@ -106,7 +110,7 @@ class PostCollection(MethodView):
             dbsession.add(user)
             dbsession.commit()
         except Exception as ex:
-            return {'status':'failure','post':userjson,'exception': + str(ex)},200
+            return {'status':'failure','post':userjson,'exception': str(ex)},200
         return {'status':'success','post':user.as_obj()}
 #        user = manager.addUser(userjson['username'],userjson['name'],userjson['groupname'],userjson['password'],userjson['state'])
 #        return {'result':'success','result':{'id' : user.id, 'username':user.username,'name': user.name,'groupname':user.groupname,'password':user.password,'state':user.state}},200
