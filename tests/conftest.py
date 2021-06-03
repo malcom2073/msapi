@@ -3,13 +3,14 @@ import os
 import sys
 USER="malcom2073"
 PASSWORD="12345"
-SUCCESS_STR = 'success'
-FAIL_STR = 'failure'
-STATUS_KEY = 'status'
 sys.path.append("/home/mcarpenter/code/msapi")
 import config
 config.SQLALCHEMY_DATABASE_URI = "sqlite://"
 import app
+from app import SUCCESS_STR
+from app import FAIL_STR
+from app import STATUS_KEY
+from app import ERROR_KEY
 # Set sqlalchemy to use sqlite's in-memory database
 #app.app.config['SECRET_KEY'] = "asfdsafdsadfsafdsadffdsa"
 #app.app.config['SQLALCHEMY_URL'] = "sqlite://"

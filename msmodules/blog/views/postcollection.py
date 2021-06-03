@@ -5,6 +5,11 @@ from models.user import User
 from models.group import Group
 import pprint
 from app import auth
+from app import SUCCESS_STR
+from app import FAIL_STR
+from app import STATUS_KEY
+from app import ERROR_KEY
+
 import sys
 from ..models.msblogpost import MSBlogPost
 from sqlalchemy import and_, or_, not_
@@ -59,27 +64,27 @@ class PostCollection(MethodView):
             #    postlist = dbsession.query(MSBlogPost).filter(or_(MSBlogPost.published == True,MSBlogPost.user_id == jwt['user_id'])).order_by(MSBlogPost.timestamp.desc()).all()
             #else:
             #    postlist = dbsession.query(MSBlogPost).order_by(MSBlogPost.timestamp.desc()).all()
-            jsonresponse = jsonify({'status':'success','posts': postlist})
+            jsonresponse = jsonify({STATUS_KEY:SUCCESS_STR,'posts': postlist})
             dbsession.close()
             print("Postcount: " + str(len(postlist)))
             sys.stdout.flush()
 
             if postlist is None or len(postlist) == 0:
                 print("No posts")
-                return {'status':'success','posts':[]},200
-                return jsonify({'status':'error','error':'No Posts'})
+                return {STATUS_KEY:SUCCESS_STR,'posts':[]},200
+                return jsonify({STATUS_KEY:FAIL_STR,ERROR_KEY:'No Posts'})
             return jsonresponse
         except Exception as e:
-            return jsonify({'status':'error','error':str(e)})
-        return jsonify({'status':'success'})
+            return jsonify({STATUS_KEY:FAIL_STR,ERROR_KEY:str(e)})
+        return jsonify({STATUS_KEY:SUCCESS_STR})
 
         #        users = manager.getAllUsers()
         dbsession = db.AppSession()
         user = dbsession.query(User).filter(User.id == userid).first()
         pprint.pprint(user)
         if user is None:
-            return {'status':'failure','error':"No valid User for userid " + str(userid) + " found"},200
-        return {'status':'success','users':[user.as_obj()]},200
+            return {STATUS_KEY:FAIL_STR,ERROR_KEY:"No valid User for userid " + str(userid) + " found"},200
+        return {STATUS_KEY:SUCCESS_STR,'users':[user.as_obj()]},200
 #        user = manager.getUser(int(userid))
 #        return {'id' : user.id, 'username':user.username,'name': user.name,'groupname':user.groupname,'password':user.password,'state':user.state},200
 
@@ -96,7 +101,7 @@ class PostCollection(MethodView):
         print("User ID: " + str(uid))
         sys.stdout.flush()
 
-#        return {'status':'failure','error':"Not implemented: User: " + str(uid)},200
+#        return {STATUS_KEY:FAIL_STR,ERROR_KEY:"Not implemented: User: " + str(uid)},200
 
         userjson = request.get_json()
         user = MSBlogPost()
@@ -110,10 +115,10 @@ class PostCollection(MethodView):
             dbsession.add(user)
             dbsession.commit()
         except Exception as ex:
-            return {'status':'failure','post':userjson,'exception': str(ex)},200
-        return {'status':'success','post':user.as_obj()}
+            return {STATUS_KEY:FAIL_STR,'post':userjson,'exception': str(ex)},200
+        return {STATUS_KEY:SUCCESS_STR,'post':user.as_obj()}
 #        user = manager.addUser(userjson['username'],userjson['name'],userjson['groupname'],userjson['password'],userjson['state'])
-#        return {'result':'success','result':{'id' : user.id, 'username':user.username,'name': user.name,'groupname':user.groupname,'password':user.password,'state':user.state}},200
+#        return {'result':SUCCESS_STR,'result':{'id' : user.id, 'username':user.username,'name': user.name,'groupname':user.groupname,'password':user.password,'state':user.state}},200
 
     @auth.jwt_private    
     def put(self):
@@ -127,7 +132,7 @@ class PostCollection(MethodView):
         user = dbsession.query(User).filter(User.id == userid).first()
         pprint.pprint(user)
         if user is None:
-            return {'status':'failure','error':"No valid User for userid " + str(userid) + " found"},200
+            return {STATUS_KEY:FAIL_STR,ERROR_KEY:"No valid User for userid " + str(userid) + " found"},200
         userjson = request.get_json()
         # This will contain the changes to make tothis use as list of  KVP
         # [{"key":"value"}]
@@ -139,10 +144,10 @@ class PostCollection(MethodView):
 #            user[patch] = userjson[patch]
         try:
             dbsession.commit()
-            return {'status':'success','users':[user.as_obj()]},200
+            return {STATUS_KEY:SUCCESS_STR,'users':[user.as_obj()]},200
         except:
             dbsession.rollback()
-            return {'status':'failure','error':"Unable to commit!"},200
+            return {STATUS_KEY:FAIL_STR,ERROR_KEY:"Unable to commit!"},200
 
         return "Responding to a PATCH request"
 

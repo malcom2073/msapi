@@ -4,6 +4,7 @@ from conftest import USER
 from conftest import SUCCESS_STR
 from conftest import FAIL_STR
 from conftest import STATUS_KEY
+from conftest import ERROR_KEY
 import json
 import pprint
 import datetime
@@ -76,11 +77,11 @@ def test_auth_endpoints(client):
 
     rv = client.get('/api/users')
     jsonresponse = json.loads(rv.data)
-    assert (jsonresponse[STATUS_KEY] == FAIL_STR and jsonresponse['error'] == 'Null session')
+    assert (jsonresponse[STATUS_KEY] == FAIL_STR and jsonresponse[ERROR_KEY] == 'Null session')
 
     rv = client.get('/api/groups')
     jsonresponse = json.loads(rv.data)
-    assert (jsonresponse[STATUS_KEY] == FAIL_STR and jsonresponse['error'] == 'Null session')
+    assert (jsonresponse[STATUS_KEY] == FAIL_STR and jsonresponse[ERROR_KEY] == 'Null session')
 
 
 def get_valid_token(client,username=USER,password=PASSWORD):
@@ -119,7 +120,7 @@ def test_user_add_good(client):
     # Verify we get a null session, since we're not passing in a valid token
     rv = client.get('/api/users')
     jsonresponse = json.loads(rv.data)
-    assert (jsonresponse[STATUS_KEY] == FAIL_STR and jsonresponse['error'] == 'Null session')
+    assert (jsonresponse[STATUS_KEY] == FAIL_STR and jsonresponse[ERROR_KEY] == 'Null session')
 
     headers = get_valid_token(client)
 

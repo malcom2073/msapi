@@ -5,6 +5,11 @@ from models.user import User
 from models.group import Group
 import pprint
 from app import auth
+from app import SUCCESS_STR
+from app import FAIL_STR
+from app import STATUS_KEY
+from app import ERROR_KEY
+
 import sys
 from ..models.msblogpost import MSBlogPost
 from sqlalchemy import and_, or_, not_
@@ -31,50 +36,38 @@ class PostResource(MethodView):
         """
 
         jwt = auth.getJwt(request)
-        print("JWT!!!")
-        pprint.pprint(jwt)
-        print("JWT!!!")
-        print(jwt)
         uid = None
         if jwt:
             uid = jwt['user_id']
-        print("User ID: " + str(uid))
-    #    jwt = getJwt(request)
-    #    post_data = request.get_json()
-    #    pprint.pprint(post_data)
-        #print('Index: ' + str(post_data.get('id')))
-    #    print('Last: ' + str(post_data.get('last')))
-        sys.stdout.flush()
         try:
             dbsession = db.AppSession()
             #filter(or_(User.name == 'ed', User.name == 'wendy'))
             #postlist = dbsession.query(MSBlogPost).filter((MSBlogPost.published == True) | (MSBlogPost.published == False & MSblogPost.user = )).order_by(MSBlogPost.timestamp.desc()).all()
             postlist = None
             if uid is not None:
-                postlist = dbsession.query(MSBlogPost).filter(and_(or_(MSBlogPost.published == True,MSBlogPost.user_id == uid),MSBlogPost.id == postid)).order_by(MSBlogPost.timestamp.desc()).all()
+                postlist = dbsession.query(MSBlogPost).filter(and_(or_(MSBlogPost.published == True,MSBlogPost.user_id == uid),MSBlogPost.id == postid)).order_by(MSBlogPost.timestamp.desc()).one()
             else:
-                postlist = dbsession.query(MSBlogPost).filter(and_(MSBlogPost.published == True),MSBlogPost.id == postid).order_by(MSBlogPost.timestamp.desc()).all()
-            if postlist is None or len(postlist) == 0:
+                postlist = dbsession.query(MSBlogPost).filter(and_(MSBlogPost.published == True),MSBlogPost.id == postid).order_by(MSBlogPost.timestamp.desc()).one()
+            if postlist is None:
                 print("No posts")
                 dbsession.close()
-                return jsonify({'status':'failure','error':'No Posts'})
-            jsonresponse = jsonify({'status':'success','post': postlist[0]})
+                return jsonify({STATUS_KEY:FAIL_STR,ERROR_KEY:'No Posts'})
+            jsonresponse = jsonify({STATUS_KEY:SUCCESS_STR,'post': postlist})
             dbsession.close()
-            print("Postcount: " + str(len(postlist)))
             sys.stdout.flush()
 
             return jsonresponse
         except Exception as e:
-            return jsonify({'status':'failure','error':str(e)})
-        return jsonify({'status':'success'})
+            return jsonify({STATUS_KEY:FAIL_STR,ERROR_KEY:str(e)})
+        return jsonify({STATUS_KEY:SUCCESS_STR})
 
         #        users = manager.getAllUsers()
         dbsession = db.AppSession()
         user = dbsession.query(User).filter(User.id == userid).first()
         pprint.pprint(user)
         if user is None:
-            return {'status':'failure','error':"No valid User for userid " + str(userid) + " found"},200
-        return {'status':'success','user':user.as_obj()},200
+            return {STATUS_KEY:FAIL_STR,ERROR_KEY:"No valid User for userid " + str(userid) + " found"},200
+        return {STATUS_KEY:SUCCESS_STR,'user':user.as_obj()},200
 #        user = manager.getUser(int(userid))
 #        return {'id' : user.id, 'username':user.username,'name': user.name,'groupname':user.groupname,'password':user.password,'state':user.state},200
 
@@ -90,7 +83,7 @@ class PostResource(MethodView):
         post = dbsession.query(MSBlogPost).filter(MSBlogPost.id == postid).first()
         pprint.pprint(post)
         if post is None:
-            return {'status':'failure','error':"No valid Post for postid " + str(postid) + " found"},200
+            return {STATUS_KEY:FAIL_STR,ERROR_KEY:"No valid Post for postid " + str(postid) + " found"},200
         postpatch = request.get_json()
         # This will contain the changes to make tothis use as list of  KVP
         # [{"key":"value"}]
@@ -102,10 +95,10 @@ class PostResource(MethodView):
 #            user[patch] = userjson[patch]
         try:
             dbsession.commit()
-            return {'status':'success','post':[post.as_obj()]},200
+            return {STATUS_KEY:SUCCESS_STR,'post':[post.as_obj()]},200
         except:
             dbsession.rollback()
-            return {'status':'failure','error':"Unable to commit!"},200
+            return {STATUS_KEY:FAIL_STR,ERROR_KEY:"Unable to commit!"},200
 
         return "Responding to a PATCH request"
 

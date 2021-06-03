@@ -1,3 +1,11 @@
+# REST string types.
+# These are used to indicate success/failure of messages, and what the state string is in the message for checking that.
+# These should never change, but I've changed them twice, so they're "variables" now
+SUCCESS_STR = 'success'
+FAIL_STR = 'failure'
+STATUS_KEY = 'status'
+ERROR_KEY = 'error'
+
 from flask import Flask, jsonify, request
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "asfdsafdsadfsafdsadffdsa"

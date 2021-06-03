@@ -6,7 +6,10 @@ from models.group import Group
 from models.usermetadata import UserMetadata
 import pprint
 from app import auth
-
+from app import SUCCESS_STR
+from app import FAIL_STR
+from app import STATUS_KEY
+from app import ERROR_KEY
 class UsersEndpoint(MethodView):
 
     @auth.jwt_private    
@@ -28,7 +31,7 @@ class UsersEndpoint(MethodView):
         retval = []
         for user in users:
             retval.append(user.as_obj())
-        return {'status':'success','users':retval},200
+        return {STATUS_KEY:SUCCESS_STR,'users':retval},200
 
     @auth.jwt_private    
     def post(self):
@@ -66,7 +69,7 @@ class UsersEndpoint(MethodView):
         group = dbsession.query(Group).filter(Group.name == userjson['groupname']).first()
         if group is None:
             # Invalid group!
-            return {'status':'failure','error':'Invalid group name entered'}
+            return {STATUS_KEY:FAIL_STR,ERROR_KEY:'Invalid group name entered'}
         user = User(name=userjson['name'],username=userjson['username'],password=userjson['password'],email=userjson['email'],groups=[group])
         metalist = []
         if 'metadata' in userjson:
@@ -74,7 +77,7 @@ class UsersEndpoint(MethodView):
             for item in userjson['metadata']:
                 if len(item.keys()) > 1:
                     # Bad!
-                    return {'status':'failure','error':'Invalid metadata format'}
+                    return {STATUS_KEY:FAIL_STR,ERROR_KEY:'Invalid metadata format'}
                 key = list(item.keys())[0]
                 value = item[list(item.keys())[0]]
                 usermeta = UserMetadata(key=key,value=value)
@@ -90,9 +93,9 @@ class UsersEndpoint(MethodView):
             dbsession.commit()
         except Exception as ex:
             print("unable to add user to DB")
-            return {'status':'failure','error':"Unable to add user: " + str(ex)}
+            return {STATUS_KEY:FAIL_STR,ERROR_KEY:"Unable to add user: " + str(ex)}
 
-        return {'status':'success','users':[user.as_obj()]},200
+        return {STATUS_KEY:SUCCESS_STR,'users':[user.as_obj()]},200
 
 #    def put(self):
 #        """ Responds to PUT requests """
