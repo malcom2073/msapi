@@ -4,7 +4,7 @@ from sqlalchemy import ForeignKey, Column, Integer, String, DateTime, Boolean,Un
 import db
 from sqlalchemy.orm import relationship
 from typing import List
-
+from .permission import Permission
 @db.mapper_registry.mapped
 @dataclass
 class Group:
@@ -17,3 +17,4 @@ class Group:
         init=False, metadata={"sa": Column(Integer, primary_key=True)}
     )
     name: str = field(default=None, metadata={"sa": Column(String(50))})
+    permissions: List[Permission] = field(default_factory=list,metadata={ "sa": lambda: relationship("Permission",lazy="joined")})

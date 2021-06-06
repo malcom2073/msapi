@@ -37,6 +37,7 @@ def after_request(response):
 
 from models.group import Group
 from models.user import User
+from models.permission import Permission
 def initialize_empty_database(db):
     db.mapper_registry.metadata.create_all(bind=db.engine)
     for tbl in reversed(db.mapper_registry.metadata.sorted_tables):
@@ -45,10 +46,19 @@ def initialize_empty_database(db):
         except:
             pass
     db.mapper_registry.metadata.create_all(bind=db.engine)
-
     db.mainsession.commit()
+
 def populate_sample_data(db):
-    admingroup = Group(name="Admin")
+    permission = Permission(api_permission="/*")
+    try:
+        db.mainsession.add(permission)
+        db.mainsession.commit()
+    except Exception as ex:
+        print("unable to add permissions to DB")
+        print(ex)
+        db.mainsession.rollback()
+        pass
+    admingroup = Group(name="Admin",permissions=[permission])
     try:
         db.mainsession.add(admingroup)
         db.mainsession.commit()

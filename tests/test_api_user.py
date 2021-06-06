@@ -203,3 +203,5 @@ def test_user_login_not_validated(client):
 
 
 
+#def test_user_metadata(client):
+#    test_user_add_good(client)

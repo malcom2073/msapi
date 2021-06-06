@@ -77,6 +77,7 @@ def test_blog_modify_post(client):
 def test_blog_publish_post(client):
     test_blog_make_post(client)
     headers = test_api_user.get_valid_token(client)
+
     # Get our test user that we added
     rv = client.get('/api/blog/posts',headers=headers)
     jsonresponse = json.loads(rv.data)
@@ -98,7 +99,6 @@ def test_blog_publish_post(client):
     assert jsonresponse[STATUS_KEY] == SUCCESS_STR
     assert len(jsonresponse['post'])
     assert jsonresponse['post'][0]['published'] == True
-
 
     rv = client.get('/api/blog/posts')
     jsonresponse = json.loads(rv.data)
