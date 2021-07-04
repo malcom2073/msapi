@@ -34,7 +34,9 @@ class PostResource(MethodView):
             401:
                 description: Permission denied
         """
-
+# Using regex's depending on backend:
+#Table.query.filter(text('name ~ :reg')).params(reg='foo') postgresql
+#Table.query.filter(text('name REGEX :reg')).params(reg='foo') sqlite3
         jwt = auth.getJwt(request)
         uid = None
         if jwt:
@@ -44,20 +46,24 @@ class PostResource(MethodView):
             #filter(or_(User.name == 'ed', User.name == 'wendy'))
             #postlist = dbsession.query(MSBlogPost).filter((MSBlogPost.published == True) | (MSBlogPost.published == False & MSblogPost.user = )).order_by(MSBlogPost.timestamp.desc()).all()
             postlist = None
+            print("Requesting post: " + str(postid))
+            print("For user: " + str(uid))
             if uid is not None:
-                postlist = dbsession.query(MSBlogPost).filter(and_(or_(MSBlogPost.published == True,MSBlogPost.user_id == uid),MSBlogPost.id == postid)).order_by(MSBlogPost.timestamp.desc()).one()
+                postlist = dbsession.query(MSBlogPost).filter(and_(or_(MSBlogPost.published == True,MSBlogPost.user_id == uid),MSBlogPost.id == postid)).order_by(MSBlogPost.timestamp.desc()).all()
             else:
-                postlist = dbsession.query(MSBlogPost).filter(and_(MSBlogPost.published == True),MSBlogPost.id == postid).order_by(MSBlogPost.timestamp.desc()).one()
-            if postlist is None:
+                postlist = dbsession.query(MSBlogPost).filter(and_(MSBlogPost.published == True),MSBlogPost.id == postid).order_by(MSBlogPost.timestamp.desc()).all()
+            if postlist is None or len(postlist) == 0:
                 print("No posts")
                 dbsession.close()
                 return jsonify({STATUS_KEY:FAIL_STR,ERROR_KEY:'No Posts'})
-            jsonresponse = jsonify({STATUS_KEY:SUCCESS_STR,'post': postlist})
+            jsonresponse = jsonify({STATUS_KEY:SUCCESS_STR,'post': postlist[0]})
             dbsession.close()
             sys.stdout.flush()
 
             return jsonresponse
         except Exception as e:
+            print("Exception when grabbing post")
+            print(e)
             return jsonify({STATUS_KEY:FAIL_STR,ERROR_KEY:str(e)})
         return jsonify({STATUS_KEY:SUCCESS_STR})
 
