@@ -21,4 +21,4 @@ class Uploads(MethodView):
     def get(self,filepath):
         print("SunEditorCompat::get()")
         print('/cdn/uploads called for: ' + str(filepath))
-        return send_file(os.path.join('/home/mcarpenter/code/msapi/upload',filepath))
+        return send_file(os.path.join('/upload',filepath))
