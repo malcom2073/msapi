@@ -32,8 +32,8 @@ class User:
     )
     name: str = field(default=None, metadata={"sa": Column(String(50))})
     username: str = field(default=None, metadata={"sa": Column(String(50))})
-    email: str = field(default=None, metadata={"sa": Column(String(12))})
-    password: str = field(default=None, metadata={"sa": Column(String(12))})
+    email: str = field(default=None, metadata={"sa": Column(String(100))})
+    password: str = field(default=None, metadata={"sa": Column(String(100))})
     groups: List[Group] = field(
         default_factory=list, metadata={"sa": relationship("Group", secondary="usergroups")}
     )

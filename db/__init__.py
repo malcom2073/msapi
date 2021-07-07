@@ -10,6 +10,14 @@ import config
 UNIQUE_EMAIL = True
 UNIQUE_USER = False
 UNIQUE_USEREMAIL = False
+try:
+    engine = create_engine(config.SQLALCHEMY_MAIN_URI, echo = True)
+    conn = engine.connect()
+    conn.execute("commit")
+    conn.execute("create database ms")
+    conn.close()
+except:
+    pass
 engine = create_engine(config.SQLALCHEMY_DATABASE_URI, echo = True)
 Session = sessionmaker(bind = engine)
 mainsession = Session() # Only valid in the main application thread!

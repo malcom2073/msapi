@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 from flask.views import MethodView
 import json
 import config
-config.SQLALCHEMY_DATABASE_URI = "sqlite:///test.sqlite3"
+#config.SQLALCHEMY_DATABASE_URI = "sqlite:///test.sqlite3"
 
 import app
 app.app.config['SECRET_KEY'] = "asfdsafdsadfsafdsadffdsa"
@@ -15,8 +15,8 @@ from flasgger import Swagger
 print("Running")
 
 import db
-#db.initialize_empty_database(db)
-#db.populate_sample_data(db)
+db.initialize_empty_database(db)
+db.populate_sample_data(db)
 
 from models.user import User
 from models.group import Group
