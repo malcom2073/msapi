@@ -15,7 +15,7 @@ from flasgger import Swagger
 print("Running")
 
 import db
-db.initialize_empty_database(db)
+#db.initialize_empty_database(db)
 db.populate_sample_data(db)
 
 from models.user import User
