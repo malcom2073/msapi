@@ -75,6 +75,7 @@ def populate_sample_data(db):
         print(ex)
         db.mainsession.rollback()
         pass
+    admingroup = db.mainsession.query(Group.name="Admin").all()[0]
     user = User(name="Mike",username="malcom2073",password="12345",email="malcom@mike.com",groups=[admingroup],validated=True)
     try:
         db.mainsession.add(user)
