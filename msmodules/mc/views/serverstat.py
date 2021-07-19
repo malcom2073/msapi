@@ -55,5 +55,6 @@ class ServerStats(MethodView):
     except Exception as e:
       print("Exception in ServerStats get")
       pprint.pprint(e)
+      return{STATUS_KEY:FAIL_STR,ERROR_KEY:str(e)}
 
     return {STATUS_KEY:FAIL_STR,ERROR_KEY:"Unimplemented"}
