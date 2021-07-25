@@ -16,5 +16,5 @@ class Group:
     id: int = field(
         init=False, metadata={"sa": Column(Integer, primary_key=True)}
     )
-    name: str = field(default=None, metadata={"sa": Column(String(50))})
+    name: str = field(default=None, metadata={"sa": Column(String(256))})
     permissions: List[Permission] = field(default_factory=list,metadata={ "sa": lambda: relationship("Permission",lazy="joined")})
