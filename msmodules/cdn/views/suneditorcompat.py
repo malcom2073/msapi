@@ -28,19 +28,21 @@ class SunEditorCompat(MethodView):
         sys.stdout.flush()
         pprint.pprint(request.files)
         pprint.pprint(request)
+        formdict = request.form.to_dict()
+        pprint.pprint(formdict)
         for f in request.files:
             print("File: " + f)
             pprint.pprint(request.files.get(f))
             filestor = request.files.get(f)
             filestor.save(os.path.join('/upload',f))
-            size = 128, 128
             im = Image.open(os.path.join('/upload',f))
+            size = im.width,im.height
+            if 'inputHeight' in formdict and 'inputWidth' in formdict:
+                size = int(formdict['inputWidth']) if formdict['inputWidth'] != '' else im.width, int(formdict['inputHeight']) if formdict['inputHeight'] != '' else im.height
             im.thumbnail(size)
             if im.mode in ("RGBA", "P"):
                 im = im.convert("RGB") 
             im.save(os.path.join('/upload',"thumbnail." + f), "JPEG")
-        formdict = request.form.to_dict()
-        pprint.pprint(formdict)
         #pprint.pprint(formdict['file'])
         #pprint.pprint(formdict['image[image]'])
         sys.stdout.flush()
