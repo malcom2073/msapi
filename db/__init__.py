@@ -46,6 +46,10 @@ def after_request(response):
 from models.group import Group
 from models.user import User
 from models.permission import Permission
+def initialize_new_database(db):
+    db.mapper_registry.metadata.create_all(bind=db.engine)
+    db.mainsession.commit()
+
 def initialize_empty_database(db):
     db.mapper_registry.metadata.create_all(bind=db.engine)
     for tbl in reversed(db.mapper_registry.metadata.sorted_tables):
@@ -75,7 +79,7 @@ def populate_sample_data(db):
         print(ex)
         db.mainsession.rollback()
         pass
-    admingroup = db.mainsession.query(Group.name=="Admin").first()
+    admingroup = db.mainsession.query(Group).filter(Group.name=="Admin").first()
     print(admingroup)
     user = User(name="Mike",username="malcom2073",password="12345",email="malcom@mike.com",groups=[admingroup],validated=True)
     try:
