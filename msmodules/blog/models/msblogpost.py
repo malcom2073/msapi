@@ -36,7 +36,7 @@ class MSBlogPost:
         init=False,metadata={"sa": lambda: Column(ForeignKey("users.id"))}
     )
     timestamp: int = field(default=None, metadata={"sa": Column(Integer())})
-    content: str = field(default=None, metadata={"sa": Column(String(1024))})
+    content: str = field(default=None, metadata={"sa": Column(String())})
     published: bool = field(default=False, metadata={"sa": Column(Boolean())})
 
 #    user = relationship("User",backref="msblog_posts")
