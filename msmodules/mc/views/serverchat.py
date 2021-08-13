@@ -46,19 +46,24 @@ class ServerChat(MethodView):
     server = request.args.get('server')
     try:
       dbsession = db.AppSession()
-      chats = dbsession.query(MSServerChat).filter(MSServerChat.source == server).filter(MSServerChat.timestamp >= timestamp).order_by(MSServerChat.timestamp.desc()).limit(1080).all()
+      chats = dbsession.query(MSServerChat).filter(MSServerChat.source == server).filter(MSServerChat.timestamp >= timestamp).order_by(MSServerChat.timestamp.desc()).limit(50).all()
       retval = {}
       jsondoc = []
       lasttimestamp = timestamp
+
+      first = True
+      # Remember, these are in backwards order! This is so our limit() call works properly.
       for chat in chats:
+        if first:
+          lasttimestamp = chat.timestamp
+          first = False
         jsonobj = {}
         jsonobj['username'] = chat.username
         jsonobj['text'] = chat.text
         jsonobj['uuid'] = chat.uuid
         jsonobj['timestamp'] = chat.timestamp
         jsonobj['server'] = chat.source
-        lasttimestamp = chat.timestamp
-        jsondoc.append(jsonobj)
+        jsondoc.insert(0,jsonobj)
       retval['chat'] = jsondoc
       retval['last'] = lasttimestamp
       return json.dumps(retval)
