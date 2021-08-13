@@ -26,7 +26,7 @@ import app
 import os
 from sqlalchemy import and_, or_, not_
 from .views.serverstat import ServerStats
-from .views.serverChat import ServerChat
+from .views.serverchat import ServerChat
 from .views.serverstat2 import ServerStats2
 #from .views.postcollection import PostCollection
 #from .views.postresource import PostResource
