@@ -39,9 +39,11 @@ class ServerChat(MethodView):
       return jsonify({STATUS_KEY:FAIL_STR,ERROR_KEY:str(e)})
 #    return {STATUS_KEY:FAIL_STR,ERROR_KEY:"Unimplemented"}
     return {STATUS_KEY:SUCCESS_STR}
-  def get(self,timestamp,server):
+  def get(self):
     print("ServerChat::get()")
     # Get all the chats SINCE the last timstamp
+    timestamp = int(request.args.get('timestamp'))
+    server = request.args.get('server')
     try:
       dbsession = db.AppSession()
       chats = dbsession.query(MSServerChat).filter(MSServerChat.source == server).filter(MSServerChat.timestamp < timestamp).order_by(MSServerChat.timestamp.desc()).limit(1080).all()
