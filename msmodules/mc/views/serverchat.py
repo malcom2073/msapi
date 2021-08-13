@@ -46,7 +46,7 @@ class ServerChat(MethodView):
     server = request.args.get('server')
     try:
       dbsession = db.AppSession()
-      chats = dbsession.query(MSServerChat).filter(MSServerChat.source == server).filter(MSServerChat.timestamp >= timestamp).order_by(MSServerChat.timestamp.desc()).limit(50).all()
+      chats = dbsession.query(MSServerChat).filter(MSServerChat.source != server).filter(MSServerChat.timestamp > timestamp).order_by(MSServerChat.timestamp.desc()).limit(50).all()
       retval = {}
       jsondoc = []
       lasttimestamp = timestamp
