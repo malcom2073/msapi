@@ -48,8 +48,8 @@ class ServerChat(MethodView):
       dbsession = db.AppSession()
       chats = dbsession.query(MSServerChat).filter(MSServerChat.source == server).filter(MSServerChat.timestamp <= timestamp).order_by(MSServerChat.timestamp.desc()).limit(1080).all()
       retval = {}
-      retval['last'] = str(timestamp)
       jsondoc = []
+      lasttimestamp = timestamp
       for chat in chats:
         jsonobj = {}
         jsonobj['username'] = chat.username
@@ -57,8 +57,10 @@ class ServerChat(MethodView):
         jsonobj['uuid'] = chat.uuid
         jsonobj['timestamp'] = chat.timestamp
         jsonobj['server'] = chat.source
+        lasttimestamp = chat.timestamp
         jsondoc.append(jsonobj)
       retval['chat'] = jsondoc
+      retval['last'] = lasttimestamp
       return json.dumps(retval)
     except Exception as e:
       print("Exception in ServerChat get")
