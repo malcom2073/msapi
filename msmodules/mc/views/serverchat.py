@@ -58,7 +58,7 @@ class ServerChat(MethodView):
         jsonobj['timestamp'] = chat.timestamp
         jsonobj['server'] = chat.source
         jsondoc.append(jsonobj)
-      retval['chat'] = jsonobj
+      retval['chat'] = jsondoc
       return json.dumps(retval)
     except Exception as e:
       print("Exception in ServerChat get")
