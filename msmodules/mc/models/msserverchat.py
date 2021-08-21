@@ -38,8 +38,12 @@ class MSServerChat:
     username: str = field(default=None, metadata={"sa": Column(String())})
     # UUID of the user. This is used for tying multiple chats together.
     uuid: str = field(default=None, metadata={"sa": Column(String())})
+    # Type of message
+    msgtype: str = field(default=None, metadata={"sa": Column(String())})
     # Actual text content.
     text: str = field(default=None, metadata={"sa": Column(String())})
+    # Description, used for advancements
+    description: str = field(default=None, metadata={"sa": Column(String())})
     # Source. ATM6, E2E, DISCORD, etc.
     source: str = field(default=None, metadata={"sa": Column(String())})
 

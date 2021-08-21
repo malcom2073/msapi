@@ -28,7 +28,9 @@ class ServerChat(MethodView):
       chat = MSServerChat()
       chat.username = data['username']
       chat.text = data['text']
+      chat.description = data['description']
       chat.uuid = data['uuid']
+      chat.msgtype = data['msgtype']
       chat.timestamp = data['timestamp']
       chat.source = data['server']
       dbsession.add(chat)
@@ -60,7 +62,9 @@ class ServerChat(MethodView):
         jsonobj = {}
         jsonobj['username'] = chat.username
         jsonobj['text'] = chat.text
+        jsonobj['description'] = chat.description
         jsonobj['uuid'] = chat.uuid
+        jsonobj['msgtype'] = chat.msgtype
         jsonobj['timestamp'] = chat.timestamp
         jsonobj['server'] = chat.source
         jsondoc.insert(0,jsonobj)
